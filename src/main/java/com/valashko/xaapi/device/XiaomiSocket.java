@@ -8,7 +8,8 @@ public class XiaomiSocket extends SlaveDevice {
 
     public enum Status {
         On,
-        Off
+        Off,
+        Unknown // probably device is offline
     }
 
     private Status lastStatus;
@@ -29,6 +30,9 @@ public class XiaomiSocket extends SlaveDevice {
                         break;
                     case "off":
                         lastStatus = Status.Off;
+                        break;
+                    case "unknown":
+                        lastStatus = Status.Unknown;
                         break;
                     default:
                         throw new XaapiException("Unknown status: " + status);
