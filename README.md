@@ -14,17 +14,31 @@ which connect to a gateway through Zigbee.
 XiaomiGateway g = new XiaomiGateway("192.168.1.105");
 
 String blueCubeSid = "158d0001118a81";
-g.getDevice(blueCubeSid).asXiaomiCube().subscribeForActions((String action) -> System.out.println("Blue cube: " + action));
-g.getDevice(blueCubeSid).asXiaomiCube().subscribeForRotation((Double angle) -> System.out.println("Blue cube rotated: " + angle));
+IInteractiveDevice.SubscriptionToken blueCubeActionsSubscriptionToken =
+        g.getDevice(blueCubeSid).asXiaomiCube().subscribeForActions((String action) -> System.out.println("Blue cube: " + action));
+IInteractiveDevice.SubscriptionToken blueCubeRotationSubscriptionToken =
+    g.getDevice(blueCubeSid).asXiaomiCube().subscribeForRotation((Double angle) -> System.out.println("Blue cube rotated: " + angle));
 
 String pinkCubeSid = "158d000101782c";
-g.getDevice(pinkCubeSid).asXiaomiCube().subscribeForActions((String action) -> System.out.println("Pink cube: " + action));
-g.getDevice(pinkCubeSid).asXiaomiCube().subscribeForRotation((Double angle) -> System.out.println("Pink cube rotated: " + angle));
+IInteractiveDevice.SubscriptionToken pinkCubeActionsSubscriptionToken =
+    g.getDevice(pinkCubeSid).asXiaomiCube().subscribeForActions((String action) -> System.out.println("Pink cube: " + action));
+IInteractiveDevice.SubscriptionToken pinkCubeRotationSubscriptionToken =
+    g.getDevice(pinkCubeSid).asXiaomiCube().subscribeForRotation((Double angle) -> System.out.println("Pink cube rotated: " + angle));
 
 String buttonSid = "158d0001232e95";
-g.getDevice(buttonSid).asXiaomiSwitchButton().subscribeForActions((String action) -> System.out.println("Button: " + action));
+IInteractiveDevice.SubscriptionToken buttonActionsSubscriptionToken =
+    g.getDevice(buttonSid).asXiaomiSwitchButton().subscribeForActions((String action) -> System.out.println("Button: " + action));
 
 ExecutorService threadPool = Executors.newFixedThreadPool(1);
 g.startReceivingUpdates(threadPool);
-threadPool.awaitTermination(0, TimeUnit.SECONDS);
+threadPool.awaitTermination(60, TimeUnit.SECONDS); // run for 60 seconds
+
+// cancelling subscription is optional
+g.getDevice(blueCubeSid).asXiaomiCube().unsubscribeForActions(blueCubeActionsSubscriptionToken);
+g.getDevice(blueCubeSid).asXiaomiCube().unsubscribeForRotation(blueCubeRotationSubscriptionToken);
+
+g.getDevice(pinkCubeSid).asXiaomiCube().unsubscribeForActions(pinkCubeActionsSubscriptionToken);
+g.getDevice(pinkCubeSid).asXiaomiCube().unsubscribeForRotation(pinkCubeRotationSubscriptionToken);
+
+g.getDevice(buttonSid).asXiaomiSwitchButton().unsubscribeForActions(buttonActionsSubscriptionToken);
 ```
