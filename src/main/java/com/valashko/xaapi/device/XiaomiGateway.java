@@ -130,6 +130,7 @@ public class XiaomiGateway {
     }
 
     private void handleReport(ReadReply update) {
+        // TODO handle updates about gateway itself
         getDevice(update.sid).update(update.data);
     }
 

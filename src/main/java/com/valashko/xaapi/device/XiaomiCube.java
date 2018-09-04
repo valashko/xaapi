@@ -4,8 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.valashko.xaapi.XaapiException;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -26,8 +26,8 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     private int charge;
     private Action lastAction;
     private Optional<Double> lastRotationAngle = Optional.empty();
-    private ArrayList<Consumer<String>> actionsCallbacks = new ArrayList<>();
-    private ArrayList<Consumer<Double>> rotationCallbacks = new ArrayList<>();
+    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private HashMap<SubscriptionToken, Consumer<Double>> rotationCallbacks = new HashMap<>();
 
     public XiaomiCube(String sid) {
         super(sid, Type.XiaomiCube);
@@ -53,7 +53,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     }
 
     @Override
-    public Collection<Consumer<String>> getActionsCallbacks() {
+    public Map<SubscriptionToken, Consumer<String>> getActionsCallbacks() {
         return actionsCallbacks;
     }
 
@@ -74,8 +74,14 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
         }
     }
 
-    public void subscribeForRotation(Consumer<Double> callback) {
-        rotationCallbacks.add(callback);
+    public SubscriptionToken subscribeForRotation(Consumer<Double> callback) {
+        SubscriptionToken token = new SubscriptionToken();
+        rotationCallbacks.put(token, callback);
+        return token;
+    }
+
+    public void unsubscribeForRotation(SubscriptionToken token) {
+        rotationCallbacks.remove(token);
     }
 
     private void updateWithAction(String action) throws XaapiException {
@@ -122,7 +128,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     }
 
     private void notifyWithRotation(double value) {
-        for(Consumer<Double> c : rotationCallbacks) {
+        for(Consumer<Double> c : rotationCallbacks.values()) {
             c.accept(value);
         }
     }

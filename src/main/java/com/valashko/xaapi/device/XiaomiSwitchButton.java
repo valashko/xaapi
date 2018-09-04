@@ -4,8 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.valashko.xaapi.XaapiException;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevice {
@@ -16,7 +16,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
     }
 
     private Action lastAction;
-    private ArrayList<Consumer<String>> actionsCallbacks = new ArrayList<>();
+    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     public XiaomiSwitchButton(String sid) {
         super(sid, Type.XiaomiSwitchButton);
@@ -37,7 +37,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
     }
 
     @Override
-    public Collection<Consumer<String>> getActionsCallbacks() {
+    public Map<SubscriptionToken, Consumer<String>> getActionsCallbacks() {
         return actionsCallbacks;
     }
 
