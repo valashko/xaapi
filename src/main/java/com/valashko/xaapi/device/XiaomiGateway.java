@@ -4,11 +4,12 @@ import com.google.gson.Gson;
 import com.valashko.xaapi.XaapiException;
 import com.valashko.xaapi.channel.DirectChannel;
 import com.valashko.xaapi.channel.IncomingMulticastChannel;
+import com.valashko.xaapi.command.WhoisCommand;
 import com.valashko.xaapi.command.GetIdListCommand;
 import com.valashko.xaapi.command.ReadCommand;
 import com.valashko.xaapi.reply.GetIdListReply;
 import com.valashko.xaapi.reply.ReadReply;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.valashko.xaapi.reply.WhoisReply;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -24,19 +25,36 @@ public class XiaomiGateway {
 
     private static final Gson GSON = new Gson();
 
+    private String sid;
     private IncomingMulticastChannel incomingMulticastChannel;
     private DirectChannel directChannel;
+    private XiaomiGatewayLight builtinLight;
+    private XiaomiGatewayIlluminationSensor builtinIlluminationSensor;
     private Map<String, SlaveDevice> knownDevices = new HashMap<>();
     private boolean continueReceivingUpdates;
 
-    public static XiaomiGateway discover() {
-        throw new NotImplementedException();
+    public static XiaomiGateway discover() throws IOException, XaapiException {
+        // TODO discover more than one gateway
+        DirectChannel discoveryChannel = new DirectChannel(GROUP, PORT_DISCOVERY);
+        discoveryChannel.send(new WhoisCommand().toBytes());
+        String replyString = new String(discoveryChannel.receive());
+        WhoisReply reply = GSON.fromJson(replyString, WhoisReply.class);
+        if(Integer.parseInt(reply.port) != PORT) {
+            throw new XaapiException("Gateway occupies unexpected port: " + reply.port);
+        }
+        return new XiaomiGateway(reply.ip);
     }
 
     public XiaomiGateway(String ip) throws IOException, XaapiException {
         this.incomingMulticastChannel = new IncomingMulticastChannel(GROUP, PORT);
         this.directChannel = new DirectChannel(ip, PORT);
+        configureBuiltinDevices();
         queryDevices();
+    }
+
+    private void configureBuiltinDevices() {
+        builtinLight = new XiaomiGatewayLight();
+        builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor();
     }
 
     private void queryDevices() throws XaapiException {
@@ -44,6 +62,7 @@ public class XiaomiGateway {
             directChannel.send(new GetIdListCommand().toBytes());
             String replyString = new String(directChannel.receive());
             GetIdListReply reply = GSON.fromJson(replyString, GetIdListReply.class);
+            sid = reply.sid;
             for(String sid : GSON.fromJson(reply.data, String[].class)) {
                 knownDevices.put(sid, readDevice(sid));
             }
@@ -56,6 +75,22 @@ public class XiaomiGateway {
         SlaveDevice device = knownDevices.get(sid);
         assert(device.getSid().equals(sid));
         return device;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public XiaomiGatewayLight getBuiltinLight() {
+        return builtinLight;
+    }
+
+    public XiaomiGatewayIlluminationSensor getBuiltinIlluminationSensor() {
+        return builtinIlluminationSensor;
+    }
+
+    private boolean isMyself(String sid) {
+        return sid.equals(this.sid);
     }
 
     private SlaveDevice readDevice(String sid) throws XaapiException {
@@ -119,7 +154,11 @@ public class XiaomiGateway {
     private void handleUpdate(ReadReply update) throws XaapiException {
         switch(update.cmd) {
             case "report":
-                handleReport(update);
+                if(isMyself(update.sid)) {
+                    handleBuiltinReport(update);
+                } else {
+                    handleReport(update);
+                }
                 break;
             case "heartbeat":
                 handleHeartbeat(update);
@@ -132,6 +171,11 @@ public class XiaomiGateway {
     private void handleReport(ReadReply update) {
         // TODO handle updates about gateway itself
         getDevice(update.sid).update(update.data);
+    }
+
+    private void handleBuiltinReport(ReadReply update) {
+        builtinLight.update(update.data);
+        builtinIlluminationSensor.update(update.data);
     }
 
     private void handleHeartbeat(ReadReply update) {
