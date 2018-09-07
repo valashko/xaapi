@@ -1,9 +1,7 @@
 package com.valashko.xaapi.reply;
 
-public class WhoisReply {
-    public String cmd;
+public class WhoisReply extends Reply {
     public String port;
-    public String sid;
     public String model;
     public String proto_version;
     public String ip;

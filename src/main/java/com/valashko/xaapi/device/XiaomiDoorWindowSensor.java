@@ -13,8 +13,8 @@ public class XiaomiDoorWindowSensor extends SlaveDevice {
 
     private Status lastStatus;
 
-    public XiaomiDoorWindowSensor(String sid) {
-        super(sid, Type.XiaomiCube);
+    public XiaomiDoorWindowSensor(XiaomiGateway gateway, String sid) {
+        super(gateway, sid, Type.XiaomiCube);
     }
 
     @Override

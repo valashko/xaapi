@@ -1,8 +1,6 @@
 package com.valashko.xaapi.reply;
 
-public class GetIdListReply {
-    public String cmd;
-    public String sid;
-    public String token;
+public class GetIdListReply extends Reply {
     public String data;
+    public String token;
 }

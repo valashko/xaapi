@@ -2,7 +2,6 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonParser;
 import com.valashko.xaapi.XaapiException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public abstract class BuiltinDevice {
 

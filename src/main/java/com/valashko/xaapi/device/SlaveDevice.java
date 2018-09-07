@@ -15,10 +15,12 @@ public abstract class SlaveDevice {
     }
 
     protected static JsonParser JSON_PARSER = new JsonParser();
+    protected XiaomiGateway gateway;
     private String sid;
     private Type type;
 
-    public SlaveDevice(String sid, Type type) {
+    public SlaveDevice(XiaomiGateway gateway, String sid, Type type) {
+        this.gateway = gateway;
         this.sid = sid;
         this.type = type;
     }

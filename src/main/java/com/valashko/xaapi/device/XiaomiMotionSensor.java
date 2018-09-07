@@ -12,8 +12,8 @@ public class XiaomiMotionSensor extends SlaveDevice {
 
     private Status lastStatus;
 
-    public XiaomiMotionSensor(String sid) {
-        super(sid, Type.XiaomiMotionSensor);
+    public XiaomiMotionSensor(XiaomiGateway gateway, String sid) {
+        super(gateway, sid, Type.XiaomiMotionSensor);
     }
 
     @Override

@@ -12,14 +12,16 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
 
     public enum Action {
         Click,
-        DoubleClick
+        DoubleClick,
+        LongClickPress,
+        LongClickRelease
     }
 
     private Action lastAction;
     private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
-    public XiaomiSwitchButton(String sid) {
-        super(sid, Type.XiaomiSwitchButton);
+    public XiaomiSwitchButton(XiaomiGateway gateway, String sid) {
+        super(gateway, sid, Type.XiaomiSwitchButton);
     }
 
     @Override
@@ -52,6 +54,12 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
                 break;
             case "double_click":
                 lastAction = Action.DoubleClick;
+                break;
+            case "long_click_press":
+                lastAction = Action.LongClickPress;
+                break;
+            case "long_click_release":
+                lastAction = Action.LongClickRelease;
                 break;
             default:
                 throw new XaapiException("Unknown action: " + action);

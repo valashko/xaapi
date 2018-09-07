@@ -14,8 +14,8 @@ public class XiaomiSocket extends SlaveDevice {
 
     private Status lastStatus;
 
-    public XiaomiSocket(String sid) {
-        super(sid, Type.XiaomiSocket);
+    public XiaomiSocket(XiaomiGateway gateway, String sid) {
+        super(gateway, sid, Type.XiaomiSocket);
     }
 
     @Override
@@ -47,5 +47,17 @@ public class XiaomiSocket extends SlaveDevice {
 
     public Status getLastStatus() {
         return lastStatus;
+    }
+
+    public void turnOn() throws XaapiException {
+        JsonObject on = new JsonObject();
+        on.addProperty("status", "on");
+        gateway.sendDataToDevice(this, on);
+    }
+
+    public void turnOff() throws XaapiException {
+        JsonObject off = new JsonObject();
+        off.addProperty("status", "off");
+        gateway.sendDataToDevice(this, off);
     }
 }
