@@ -4,15 +4,20 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.valashko.xaapi.XaapiException;
 
-public class XiaomiMotionSensor extends SlaveDevice {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
-    public enum Status {
+public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevice {
+
+    public enum Action {
         Motion
     }
 
-    private Status lastStatus;
+    private Action lastAction;
+    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
-    public XiaomiMotionSensor(XiaomiGateway gateway, String sid) {
+    XiaomiMotionSensor(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiMotionSensor);
     }
 
@@ -21,14 +26,15 @@ public class XiaomiMotionSensor extends SlaveDevice {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
             if (o.has("status")) {
-                String status = o.get("status").getAsString();
-                switch(status) {
+                String action = o.get("status").getAsString();
+                switch(action) {
                     case "motion":
-                        lastStatus = Status.Motion;
+                        lastAction = Action.Motion;
                         break;
                     default:
-                        throw new XaapiException("Unknown status: " + status);
+                        throw new XaapiException("Unknown action: " + action);
                 }
+                notifyWithAction(action);
             }
         } catch (XaapiException e) {
             e.printStackTrace();
@@ -37,7 +43,12 @@ public class XiaomiMotionSensor extends SlaveDevice {
         }
     }
 
-    public Status getLastStatus() {
-        return lastStatus;
+    @Override
+    public Map<SubscriptionToken, Consumer<String>> getActionsCallbacks() {
+        return actionsCallbacks;
+    }
+
+    public Action getLastAction() {
+        return lastAction;
     }
 }

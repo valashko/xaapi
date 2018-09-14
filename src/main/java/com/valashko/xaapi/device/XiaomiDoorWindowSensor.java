@@ -4,17 +4,22 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.valashko.xaapi.XaapiException;
 
-public class XiaomiDoorWindowSensor extends SlaveDevice {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
-    public enum Status {
+public class XiaomiDoorWindowSensor extends SlaveDevice implements IInteractiveDevice {
+
+    public enum Action {
         Open,
         Close
     }
 
-    private Status lastStatus;
+    private Action lastAction;
+    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
-    public XiaomiDoorWindowSensor(XiaomiGateway gateway, String sid) {
-        super(gateway, sid, Type.XiaomiCube);
+    XiaomiDoorWindowSensor(XiaomiGateway gateway, String sid) {
+        super(gateway, sid, Type.XiaomiDoorWindowSensor);
     }
 
     @Override
@@ -22,17 +27,18 @@ public class XiaomiDoorWindowSensor extends SlaveDevice {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
             if (o.has("status")) {
-                String status = o.get("status").getAsString();
-                switch(status) {
+                String action = o.get("status").getAsString();
+                switch(action) {
                     case "open":
-                        lastStatus = Status.Open;
+                        lastAction = Action.Open;
                         break;
                     case "close":
-                        lastStatus = Status.Close;
+                        lastAction = Action.Close;
                         break;
                     default:
-                        throw new XaapiException("Unexpected status: " + status);
+                        throw new XaapiException("Unexpected action: " + action);
                 }
+                notifyWithAction(action);
             }
         } catch (XaapiException e) {
             e.printStackTrace();
@@ -41,7 +47,12 @@ public class XiaomiDoorWindowSensor extends SlaveDevice {
         }
     }
 
-    public Status getLastStatus() {
-        return lastStatus;
+    @Override
+    public Map<SubscriptionToken, Consumer<String>> getActionsCallbacks() {
+        return actionsCallbacks;
+    }
+
+    public Action getLastAction() {
+        return lastAction;
     }
 }

@@ -4,17 +4,22 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.valashko.xaapi.XaapiException;
 
-public class XiaomiSocket extends SlaveDevice {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
-    public enum Status {
+public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
+
+    public enum Action {
         On,
         Off,
         Unknown // probably device is offline
     }
 
-    private Status lastStatus;
+    private Action lastAction;
+    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
-    public XiaomiSocket(XiaomiGateway gateway, String sid) {
+    XiaomiSocket(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiSocket);
     }
 
@@ -23,20 +28,21 @@ public class XiaomiSocket extends SlaveDevice {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
             if (o.has("status")) {
-                String status = o.get("status").getAsString();
-                switch(status) {
+                String action = o.get("status").getAsString();
+                switch(action) {
                     case "on":
-                        lastStatus = Status.On;
+                        lastAction = Action.On;
                         break;
                     case "off":
-                        lastStatus = Status.Off;
+                        lastAction = Action.Off;
                         break;
                     case "unknown":
-                        lastStatus = Status.Unknown;
+                        lastAction = Action.Unknown;
                         break;
                     default:
-                        throw new XaapiException("Unknown status: " + status);
+                        throw new XaapiException("Unknown action: " + action);
                 }
+                notifyWithAction(action);
             }
         } catch (XaapiException e) {
             e.printStackTrace();
@@ -45,8 +51,13 @@ public class XiaomiSocket extends SlaveDevice {
         }
     }
 
-    public Status getLastStatus() {
-        return lastStatus;
+    @Override
+    public Map<SubscriptionToken, Consumer<String>> getActionsCallbacks() {
+        return actionsCallbacks;
+    }
+
+    public Action getLastAction() {
+        return lastAction;
     }
 
     public void turnOn() throws XaapiException {
