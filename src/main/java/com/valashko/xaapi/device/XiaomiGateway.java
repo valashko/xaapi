@@ -68,6 +68,14 @@ public class XiaomiGateway {
         configureCipher(password);
     }
 
+    public void configurePassword(String password) throws XaapiException {
+        configureCipher(password);
+    }
+
+    public Map<String, SlaveDevice> getKnownDevices() {
+        return knownDevices;
+    }
+
     private void configureBuiltinDevices() {
         builtinLight = new XiaomiGatewayLight();
         builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor();
