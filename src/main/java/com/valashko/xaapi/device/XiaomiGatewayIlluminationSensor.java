@@ -11,8 +11,8 @@ public class XiaomiGatewayIlluminationSensor extends BuiltinDevice {
     private int illumination;
     private HashMap<IInteractiveDevice.SubscriptionToken, Consumer<Integer>> illuminationChangeCallbacks = new HashMap<>();
 
-    public XiaomiGatewayIlluminationSensor() {
-        super(Type.XiaomiGatewayIlluminationSensor);
+    public XiaomiGatewayIlluminationSensor(String gatewaySid) {
+        super(gatewaySid + ":illumination", Type.XiaomiGatewayIlluminationSensor);
     }
 
     @Override

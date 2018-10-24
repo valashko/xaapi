@@ -11,10 +11,16 @@ public abstract class BuiltinDevice {
     }
 
     protected static JsonParser JSON_PARSER = new JsonParser();
+    private String uid;
     private Type type;
 
-    public BuiltinDevice(Type type) {
+    public BuiltinDevice(String uid, Type type) {
+        this.uid = uid;
         this.type = type;
+    }
+
+    public String getUid() {
+        return uid;
     }
 
     public Type getType() {

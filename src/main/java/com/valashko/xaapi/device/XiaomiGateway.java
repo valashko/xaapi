@@ -60,8 +60,8 @@ public class XiaomiGateway {
     public XiaomiGateway(String ip) throws IOException, XaapiException {
         this.incomingMulticastChannel = new IncomingMulticastChannel(GROUP, PORT);
         this.directChannel = new DirectChannel(ip, PORT);
-        configureBuiltinDevices();
         queryDevices();
+        configureBuiltinDevices();
     }
     public XiaomiGateway(String ip, String password) throws IOException, XaapiException {
         this(ip);
@@ -77,8 +77,8 @@ public class XiaomiGateway {
     }
 
     private void configureBuiltinDevices() {
-        builtinLight = new XiaomiGatewayLight();
-        builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor();
+        builtinLight = new XiaomiGatewayLight(sid);
+        builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor(sid);
     }
 
     private void configureCipher(String password) throws XaapiException {

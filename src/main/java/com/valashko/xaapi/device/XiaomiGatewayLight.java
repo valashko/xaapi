@@ -10,8 +10,8 @@ public class XiaomiGatewayLight extends BuiltinDevice {
     private byte brightness;
     private Color color;
 
-    public XiaomiGatewayLight() {
-        super(Type.XiaomiGatewayLight);
+    public XiaomiGatewayLight(String gatewaySid) {
+        super(gatewaySid + ":light", Type.XiaomiGatewayLight);
     }
 
     @Override

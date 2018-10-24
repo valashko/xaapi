@@ -16,6 +16,7 @@ public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevic
 
     private Action lastAction;
     private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private HashMap<SubscriptionToken, Runnable> motionCallbacks = new HashMap<>();
 
     XiaomiMotionSensor(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiMotionSensor);
@@ -30,6 +31,7 @@ public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevic
                 switch(action) {
                     case "motion":
                         lastAction = Action.Motion;
+                        notifyWithMotion();
                         break;
                     default:
                         throw new XaapiException("Unknown action: " + action);
@@ -50,5 +52,21 @@ public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevic
 
     public Action getLastAction() {
         return lastAction;
+    }
+
+    public SubscriptionToken subscribeForMotion(Runnable callback) {
+        SubscriptionToken token = new SubscriptionToken();
+        motionCallbacks.put(token, callback);
+        return token;
+    }
+
+    public void unsubscribeForMotion(SubscriptionToken token) {
+        motionCallbacks.remove(token);
+    }
+
+    private void notifyWithMotion() {
+        for(Runnable r : motionCallbacks.values()) {
+            r.run();
+        }
     }
 }
