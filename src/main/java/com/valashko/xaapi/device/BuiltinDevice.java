@@ -11,11 +11,22 @@ public abstract class BuiltinDevice {
     }
 
     protected static JsonParser JSON_PARSER = new JsonParser();
+    protected XiaomiGateway gateway;
     private String uid;
     private Type type;
 
-    public BuiltinDevice(String uid, Type type) {
-        this.uid = uid;
+    public BuiltinDevice(XiaomiGateway gateway, Type type) {
+        this.gateway = gateway;
+        String typeSuffix = "undefined";
+        switch (type) {
+            case XiaomiGatewayLight:
+                typeSuffix = "light";
+                break;
+            case XiaomiGatewayIlluminationSensor:
+                typeSuffix = "illumination";
+                break;
+        }
+        this.uid = gateway.getSid() + ":" + typeSuffix;
         this.type = type;
     }
 

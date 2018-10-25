@@ -21,6 +21,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
@@ -77,8 +78,8 @@ public class XiaomiGateway {
     }
 
     private void configureBuiltinDevices() {
-        builtinLight = new XiaomiGatewayLight(sid);
-        builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor(sid);
+        builtinLight = new XiaomiGatewayLight(this);
+        builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor(this);
     }
 
     private void configureCipher(String password) throws XaapiException {
@@ -153,6 +154,20 @@ public class XiaomiGateway {
         if(key.isPresent()) {
             try {
                 directChannel.send(new WriteCommand(device, data, key.get()).toBytes());
+                // TODO add handling for expired key
+            } catch (IOException e) {
+                throw new XaapiException("Network error: " + e.getMessage());
+            }
+        } else {
+            throw new XaapiException("Unable to control device without a key. Did you forget to set a password?");
+        }
+    }
+
+    void sendDataToDevice(BuiltinDevice device /* just a type marker for overloading */, JsonObject data) throws XaapiException {
+        assert device.gateway.equals(this);
+        if(key.isPresent()) {
+            try {
+                directChannel.send(new WriteSelfCommand(this, data, key.get()).toBytes());
                 // TODO add handling for expired key
             } catch (IOException e) {
                 throw new XaapiException("Network error: " + e.getMessage());
@@ -262,5 +277,18 @@ public class XiaomiGateway {
 
     private void handleSlaveDeviceHeartbeat(SlaveDeviceHeartbeat slaveDeviceHeartbeat) {
         // TODO implement
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        XiaomiGateway that = (XiaomiGateway) o;
+        return Objects.equals(sid, that.sid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sid);
     }
 }
