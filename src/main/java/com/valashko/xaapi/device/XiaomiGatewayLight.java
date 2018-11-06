@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 public class XiaomiGatewayLight extends BuiltinDevice {
 
     private byte brightness;
+    private byte previousNonZeroBrightness = 100;
     private Color color = Color.BLACK; // TODO decide if this is an appropriate default value
 
     private HashMap<IInteractiveDevice.SubscriptionToken, Consumer<Byte>> brightnessCallbacks = new HashMap<>();
@@ -38,6 +39,10 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean getOn() {
+        return getBrightness() > 0;
     }
 
     public byte getBrightness() {
@@ -80,8 +85,19 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         }
     }
 
+    public void setOn(boolean on) throws XaapiException {
+        if(on) {
+            setBrightness(previousNonZeroBrightness);
+        } else {
+            setBrightness((byte)0);
+        }
+    }
+
     public void setBrightness(byte brightness) throws XaapiException {
         writeBrightnessAndColor(brightness, this.color);
+        if(this.brightness != 0) {
+            previousNonZeroBrightness = this.brightness;
+        }
         this.brightness = brightness;
     }
 
@@ -90,7 +106,8 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         this.color = color;
     }
 
-    private void writeBrightnessAndColor(int brightness, Color color) throws XaapiException {
+    private void writeBrightnessAndColor(byte brightness, Color color) throws XaapiException {
+        // TODO verify brightness in range 0..100
         JsonObject rgb = new JsonObject();
         int rgbValue = brightness << 24 | color.getRGB();
         rgb.addProperty("rgb", rgbValue);
