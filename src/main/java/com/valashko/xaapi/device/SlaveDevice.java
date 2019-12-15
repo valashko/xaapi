@@ -2,7 +2,7 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonParser;
 import com.valashko.xaapi.XaapiException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 public abstract class SlaveDevice {
 
@@ -34,7 +34,7 @@ public abstract class SlaveDevice {
     }
 
     public short getShortId() {
-        throw new NotImplementedException(); // TODO implement
+        throw new NotImplementedException("Method not yet implemented"); // TODO implement
     }
 
     abstract void update(String data);
