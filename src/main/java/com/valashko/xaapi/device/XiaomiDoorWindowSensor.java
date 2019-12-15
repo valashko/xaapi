@@ -40,9 +40,7 @@ public class XiaomiDoorWindowSensor extends SlaveDevice implements IInteractiveD
                 }
                 notifyWithAction(action);
             }
-        } catch (XaapiException e) {
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
+        } catch (XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
         }
     }

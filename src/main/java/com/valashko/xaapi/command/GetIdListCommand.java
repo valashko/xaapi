@@ -7,6 +7,6 @@ public class GetIdListCommand implements ICommand {
 
     @Override
     public byte[] toBytes() {
-        return  new String("{\"cmd\":\"get_id_list\"}").getBytes(StandardCharsets.US_ASCII);
+        return "{\"cmd\":\"get_id_list\"}".getBytes(StandardCharsets.US_ASCII);
     }
 }

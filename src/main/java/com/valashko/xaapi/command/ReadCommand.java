@@ -11,6 +11,6 @@ public class ReadCommand implements ICommand {
 
     @Override
     public byte[] toBytes() {
-        return new String("{\"cmd\":\"read\", \"sid\":\""+ sid +"\"}").getBytes(StandardCharsets.US_ASCII);
+        return ("{\"cmd\":\"read\", \"sid\":\"" + sid + "\"}").getBytes(StandardCharsets.US_ASCII);
     }
 }

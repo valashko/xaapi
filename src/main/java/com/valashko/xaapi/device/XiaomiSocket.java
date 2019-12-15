@@ -44,9 +44,7 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
                 }
                 notifyWithAction(action);
             }
-        } catch (XaapiException e) {
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
+        } catch (XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
         }
     }

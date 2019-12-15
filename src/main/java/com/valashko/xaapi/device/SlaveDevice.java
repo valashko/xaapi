@@ -65,7 +65,7 @@ public abstract class SlaveDevice {
     }
 
     private void ensureType(Type type) throws XaapiException {
-        if(getType() != type) {
+        if (getType() != type) {
             throw new XaapiException("Device type mismatch. Expected " + type);
         }
     }

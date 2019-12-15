@@ -17,7 +17,7 @@ public class WriteCommand implements ICommand {
 
     @Override
     public byte[] toBytes() {
-        String what = "{{\"cmd\":\"write\", \"sid\":\""+ device.getSid() +"\", \"data\":" + data + "}}";
+        String what = "{{\"cmd\":\"write\", \"sid\":\"" + device.getSid() + "\", \"data\":" + data + "}}";
         return what.getBytes(StandardCharsets.US_ASCII);
     }
 }

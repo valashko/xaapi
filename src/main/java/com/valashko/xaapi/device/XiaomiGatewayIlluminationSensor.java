@@ -41,7 +41,7 @@ public class XiaomiGatewayIlluminationSensor extends BuiltinDevice {
     }
 
     private void notifyWithIlluminationChange(int value) {
-        for(Consumer<Integer> c : illuminationChangeCallbacks.values()) {
+        for (Consumer<Integer> c : illuminationChangeCallbacks.values()) {
             c.accept(value);
         }
     }

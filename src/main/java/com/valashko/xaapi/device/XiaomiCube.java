@@ -45,9 +45,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
                 String angle = o.get("rotate").getAsString().replace(',', '.'); // for some reason they use comma as decimal point
                 updateWithRotation(Double.parseDouble(angle));
             }
-        } catch(XaapiException e) {
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
+        } catch(XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
         }
     }

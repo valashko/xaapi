@@ -38,9 +38,7 @@ public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevic
                 }
                 notifyWithAction(action);
             }
-        } catch (XaapiException e) {
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
+        } catch (XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
         }
     }

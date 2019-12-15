@@ -1,7 +1,11 @@
 package com.valashko.xaapi.channel;
 
+import com.valashko.xaapi.device.Utility;
+
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 
 public class DirectChannel {
 
@@ -11,21 +15,15 @@ public class DirectChannel {
     private int port;
     private DatagramSocket socket;
 
-    public DirectChannel(String destnationIp, int destinationPort) throws IOException {
-        this.ip = destnationIp;
+    public DirectChannel(String destinationIp, int destinationPort) throws IOException {
+        this.ip = destinationIp;
         this.port = destinationPort;
         this.socket = new DatagramSocket();
         this.socket.setSoTimeout(SOCKET_TIMEOUT);
     }
 
     public byte[] receive() throws IOException {
-        byte buffer[] = new byte[1024];
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        socket.receive(packet);
-        int responseLength = packet.getLength();
-        byte response[] = new byte[responseLength];
-        System.arraycopy(buffer, 0, response, 0, responseLength);
-        return response;
+        return Utility.makeResponse(socket);
     }
 
     public void send(byte[] bytes) throws IOException {
@@ -33,4 +31,5 @@ public class DirectChannel {
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address);
         socket.send(packet);
     }
+
 }

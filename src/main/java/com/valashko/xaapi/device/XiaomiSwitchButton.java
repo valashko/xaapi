@@ -20,7 +20,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
     private Action lastAction;
     private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
-    public XiaomiSwitchButton(XiaomiGateway gateway, String sid) {
+    XiaomiSwitchButton(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiSwitchButton);
     }
 
@@ -31,9 +31,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
             if (o.has("status")) {
                 updateWithAction(o.get("status").getAsString());
             }
-        } catch (XaapiException e) {
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
+        } catch (XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
         }
     }
