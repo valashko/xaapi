@@ -35,15 +35,55 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.stream.Stream;
 
 public class XiaomiGateway {
+
+    enum DeviceModel {
+        CUBE("cube"),
+        MAGNET("magnet"),
+        PLUG("plug"),
+        MOTION("motion"),
+        SWITCH("switch");
+
+        private String value;
+
+        DeviceModel(String value) {
+            this.value = value;
+        }
+
+        static DeviceModel of(String value) {
+            return Stream.of(values())
+                    .filter(a -> value.equals(a.value))
+                    .findFirst()
+                    .orElse(null);
+        }
+    }
+
+    enum Command {
+        REPORT("report"),
+        HEARTBEAT("heartbeat");
+
+        private String value;
+
+        Command(String value) {
+            this.value = value;
+        }
+
+        static Command of(String value) {
+            return Stream.of(values())
+                    .filter(a -> value.equals(a.value))
+                    .findFirst()
+                    .orElse(null);
+        }
+    }
 
     private static final String GROUP = "224.0.0.50";
     private static final int PORT = 9898;
     private static final int PORT_DISCOVERY = 4321;
     private static final byte[] IV =
-        {     0x17, (byte)0x99, 0x6d, 0x09, 0x3d, 0x28, (byte)0xdd, (byte)0xb3,
-        (byte)0xba,       0x69, 0x5a, 0x2e, 0x6f, 0x58,       0x56,       0x2e};
+            {0x17, (byte) 0x99, 0x6d, 0x09, 0x3d, 0x28, (byte) 0xdd, (byte) 0xb3,
+                    (byte) 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e};
 
     private static final Gson GSON = new Gson();
 
@@ -186,25 +226,25 @@ public class XiaomiGateway {
             directChannel.send(new ReadCommand(sid).toBytes());
             String replyString = new String(directChannel.receive());
             ReadReply reply = GSON.fromJson(replyString, ReadReply.class);
-
-            switch (reply.model) {
-                case "cube":
+            DeviceModel model = DeviceModel.of(reply.model);
+            switch (model) {
+                case CUBE:
                     XiaomiCube cube = new XiaomiCube(this, sid);
                     cube.update(reply.data);
                     return cube;
-                case "magnet":
+                case MAGNET:
                     XiaomiDoorWindowSensor magnet = new XiaomiDoorWindowSensor(this, sid);
                     magnet.update(reply.data);
                     return magnet;
-                case "plug":
+                case PLUG:
                     XiaomiSocket plug = new XiaomiSocket(this, sid);
                     plug.update(reply.data);
                     return plug;
-                case "motion":
+                case MOTION:
                     XiaomiMotionSensor motion = new XiaomiMotionSensor(this, sid);
                     motion.update(reply.data);
                     return motion;
-                case "switch":
+                case SWITCH:
                     XiaomiSwitchButton button = new XiaomiSwitchButton(this, sid);
                     button.update(reply.data);
                     return button;
@@ -238,8 +278,8 @@ public class XiaomiGateway {
     }
 
     private void handleUpdate(Reply update, String received) throws XaapiException {
-        switch (update.cmd) {
-            case "report":
+        switch (Command.of(update.cmd)) {
+            case REPORT:
                 Report report = GSON.fromJson(received, Report.class);
                 if (isMyself(update.sid)) {
                     handleBuiltinReport(report);
@@ -247,7 +287,7 @@ public class XiaomiGateway {
                     handleReport(report);
                 }
                 break;
-            case "heartbeat":
+            case HEARTBEAT:
                 if (isMyself(update.sid)) {
                     GatewayHeartbeat gatewayHeartbeat = GSON.fromJson(received, GatewayHeartbeat.class);
                     handleGatewayHeartbeat(gatewayHeartbeat);

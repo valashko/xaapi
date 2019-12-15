@@ -7,16 +7,30 @@ import com.valashko.xaapi.XaapiException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevice {
 
     public enum Action {
-        Motion
+        MOTION("motion");// probably device is offline
+
+        private String value;
+
+        Action(String value) {
+            this.value = value;
+        }
+
+        static Action of(String value) throws XaapiException {
+            return Stream.of(values())
+                    .filter(a -> value.equals(a.value))
+                    .findFirst()
+                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+        }
     }
 
     private Action lastAction;
-    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
-    private HashMap<SubscriptionToken, Runnable> motionCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Runnable> motionCallbacks = new HashMap<>();
 
     XiaomiMotionSensor(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiMotionSensor);
@@ -26,16 +40,9 @@ public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevic
     void update(String data) {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
-            if (o.has("status")) {
-                String action = o.get("status").getAsString();
-                switch(action) {
-                    case "motion":
-                        lastAction = Action.Motion;
-                        notifyWithMotion();
-                        break;
-                    default:
-                        throw new XaapiException("Unknown action: " + action);
-                }
+            if (o.has(Property.STATUS)) {
+                String action = o.get(Property.STATUS).getAsString();
+                lastAction = Action.of(action);
                 notifyWithAction(action);
             }
         } catch (XaapiException | JsonSyntaxException e) {

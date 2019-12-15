@@ -2,7 +2,7 @@ package com.valashko.xaapi.command;
 
 import java.nio.charset.StandardCharsets;
 
-public class WhoisCommand implements ICommand {
+public class WhoisCommand extends AbstractCommand {
 
     @Override
     public byte[] toBytes() {

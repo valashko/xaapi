@@ -7,17 +7,35 @@ import com.valashko.xaapi.XaapiException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
 
     public enum Action {
-        On,
-        Off,
-        Unknown // probably device is offline
+        ON("on"),
+        OFF("off"),
+        UNKNOWN("unknown"); // probably device is offline
+
+        private String value;
+
+        Action(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        static Action of(String value) throws XaapiException {
+            return Stream.of(values())
+                    .filter(a -> value.equals(a.value))
+                    .findFirst()
+                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+        }
     }
 
     private Action lastAction;
-    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     XiaomiSocket(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiSocket);
@@ -27,21 +45,9 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
     void update(String data) {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
-            if (o.has("status")) {
-                String action = o.get("status").getAsString();
-                switch(action) {
-                    case "on":
-                        lastAction = Action.On;
-                        break;
-                    case "off":
-                        lastAction = Action.Off;
-                        break;
-                    case "unknown":
-                        lastAction = Action.Unknown;
-                        break;
-                    default:
-                        throw new XaapiException("Unknown action: " + action);
-                }
+            if (o.has(Property.STATUS)) {
+                String action = o.get(Property.STATUS).getAsString();
+                lastAction = Action.of(action);
                 notifyWithAction(action);
             }
         } catch (XaapiException | JsonSyntaxException e) {
@@ -60,13 +66,13 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
 
     public void turnOn() throws XaapiException {
         JsonObject on = new JsonObject();
-        on.addProperty("status", "on");
+        on.addProperty(Property.STATUS, Action.ON.getValue());
         gateway.sendDataToDevice(this, on);
     }
 
     public void turnOff() throws XaapiException {
         JsonObject off = new JsonObject();
-        off.addProperty("status", "off");
+        off.addProperty(Property.STATUS, Action.OFF.getValue());
         gateway.sendDataToDevice(this, off);
     }
 }

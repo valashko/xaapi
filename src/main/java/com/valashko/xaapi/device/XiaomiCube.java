@@ -8,19 +8,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
 
     public enum Action {
-        Flip90,
-        Flip180,
-        Move,
-        TapTwice,
-        Shake,
-        Swing,
-        Alert,
-        FreeFall,
-        Rotate
+        FLIP_90("flip90"),
+        FLIP_180("flip180"),
+        MOVE("move"),
+        TAP_TWICE("tap_twice"),
+        SHAKE("shake_air"),
+        SWING("swing"),
+        ALERT("alert"),
+        FREE_FALL("free_fall"),
+        ROTATE("rotate");
+
+        private String value;
+
+        Action(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        static Action of(String value) throws XaapiException {
+            return Stream.of(values())
+                    .filter(a -> value.equals(a.value))
+                    .findFirst()
+                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+        }
     }
 
     private int charge;
@@ -37,15 +55,15 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     void update(String data) {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
-            if (o.has("status")) {
-                updateWithAction(o.get("status").getAsString());
+            if (o.has(Property.STATUS)) {
+                updateWithAction(o.get(Property.STATUS).getAsString());
                 resetLastRotationValue();
             }
-            if (o.has("rotate")) {
-                String angle = o.get("rotate").getAsString().replace(',', '.'); // for some reason they use comma as decimal point
+            if (o.has(Action.ROTATE.getValue())) {
+                String angle = o.get(Action.ROTATE.getValue()).getAsString().replace(',', '.'); // for some reason they use comma as decimal point
                 updateWithRotation(Double.parseDouble(angle));
             }
-        } catch(XaapiException | JsonSyntaxException e) {
+        } catch (XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
         }
     }
@@ -65,7 +83,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     }
 
     public double getLastRotationAngle() throws XaapiException {
-        if(lastRotationAngle.isPresent()) {
+        if (lastRotationAngle.isPresent()) {
             return lastRotationAngle.get();
         } else {
             throw new XaapiException("Last rotation value does not exist");
@@ -83,41 +101,14 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     }
 
     private void updateWithAction(String action) throws XaapiException {
-        switch(action) {
-            case "flip90":
-                lastAction = Action.Flip90;
-                break;
-            case "flip180":
-                lastAction = Action.Flip180;
-                break;
-            case "move":
-                lastAction = Action.Move;
-                break;
-            case "tap_twice":
-                lastAction = Action.TapTwice;
-                break;
-            case "shake_air":
-                lastAction = Action.Shake;
-                break;
-            case "swing":
-                lastAction = Action.Swing;
-                break;
-            case "alert":
-                lastAction = Action.Alert;
-                break;
-            case "free_fall":
-                lastAction = Action.FreeFall;
-                break;
-            default:
-                throw new XaapiException("Unknown action: " + action);
-        }
+        lastAction = Action.of(action);
         notifyWithAction(action);
     }
 
     private void updateWithRotation(double value) {
-        lastAction = Action.Rotate;
+        lastAction = Action.ROTATE;
         lastRotationAngle = Optional.of(value);
-        notifyWithAction("rotate");
+        notifyWithAction(Action.ROTATE.getValue());
         notifyWithRotation(value);
     }
 
@@ -126,7 +117,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     }
 
     private void notifyWithRotation(double value) {
-        for(Consumer<Double> c : rotationCallbacks.values()) {
+        for (Consumer<Double> c : rotationCallbacks.values()) {
             c.accept(value);
         }
     }

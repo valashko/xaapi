@@ -4,22 +4,27 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class XiaomiGatewayIlluminationSensor extends BuiltinDevice {
 
+    static class Property {
+        static final String ILLUMINATION = "illumination";
+    }
+
     private int illumination;
-    private HashMap<IInteractiveDevice.SubscriptionToken, Consumer<Integer>> illuminationChangeCallbacks = new HashMap<>();
+    private Map<IInteractiveDevice.SubscriptionToken, Consumer<Integer>> illuminationChangeCallbacks = new HashMap<>();
 
     public XiaomiGatewayIlluminationSensor(XiaomiGateway gateway) {
-        super(gateway, Type.XiaomiGatewayIlluminationSensor);
+        super(gateway, DeviceType.XIAOMI_GATEWAY_ILLUMINATION_SENSOR);
     }
 
     @Override
     void update(String data) {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
-            illumination = o.get("illumination").getAsInt();
+            illumination = o.get(Property.ILLUMINATION).getAsInt();
             notifyWithIlluminationChange(illumination);
         } catch (JsonSyntaxException e) {
             e.printStackTrace();

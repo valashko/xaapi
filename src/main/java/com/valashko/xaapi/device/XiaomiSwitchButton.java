@@ -7,18 +7,32 @@ import com.valashko.xaapi.XaapiException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevice {
 
     public enum Action {
-        Click,
-        DoubleClick,
-        LongClickPress,
-        LongClickRelease
+        CLICK("click"),
+        DOUBLE_CLICK("double_click"),
+        LONG_CLICK_PRESS("long_click_press"),
+        LONG_CLICK_RELEASE("long_click_release");
+
+        private String value;
+
+        Action(String value) {
+            this.value = value;
+        }
+
+        static Action of(String value) throws XaapiException {
+            return Stream.of(values())
+                    .filter(a -> value.equals(a.value))
+                    .findFirst()
+                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+        }
     }
 
     private Action lastAction;
-    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     XiaomiSwitchButton(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiSwitchButton);
@@ -28,8 +42,8 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
     void update(String data) {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
-            if (o.has("status")) {
-                updateWithAction(o.get("status").getAsString());
+            if (o.has(Property.STATUS)) {
+                updateWithAction(o.get(Property.STATUS).getAsString());
             }
         } catch (XaapiException | JsonSyntaxException e) {
             e.printStackTrace();
@@ -46,22 +60,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
     }
 
     private void updateWithAction(String action) throws XaapiException {
-        switch(action) {
-            case "click":
-                lastAction = Action.Click;
-                break;
-            case "double_click":
-                lastAction = Action.DoubleClick;
-                break;
-            case "long_click_press":
-                lastAction = Action.LongClickPress;
-                break;
-            case "long_click_release":
-                lastAction = Action.LongClickRelease;
-                break;
-            default:
-                throw new XaapiException("Unknown action: " + action);
-        }
+        lastAction = Action.of(action);
         notifyWithAction(action);
     }
 }

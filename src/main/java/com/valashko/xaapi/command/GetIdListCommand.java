@@ -2,7 +2,7 @@ package com.valashko.xaapi.command;
 
 import java.nio.charset.StandardCharsets;
 
-public class GetIdListCommand implements ICommand {
+public class GetIdListCommand extends AbstractCommand {
     public GetIdListCommand() {}
 
     @Override

@@ -4,32 +4,39 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.valashko.xaapi.XaapiException;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class XiaomiGatewayLight extends BuiltinDevice {
+
+    private static final int COLOR_WHITE = 0x00FFFFFF;
+
+    static class Property {
+        static final String RGB = "rgb";
+    }
 
     private byte brightness;
     private byte previousNonZeroBrightness = 100;
     private Color color = Color.BLACK; // TODO decide if this is an appropriate default value
 
-    private HashMap<IInteractiveDevice.SubscriptionToken, Consumer<Byte>> brightnessCallbacks = new HashMap<>();
-    private HashMap<IInteractiveDevice.SubscriptionToken, Consumer<Color>> colorCallbacks = new HashMap<>();
+    private Map<IInteractiveDevice.SubscriptionToken, Consumer<Byte>> brightnessCallbacks = new HashMap<>();
+    private Map<IInteractiveDevice.SubscriptionToken, Consumer<Color>> colorCallbacks = new HashMap<>();
 
     public XiaomiGatewayLight(XiaomiGateway gateway) {
-        super(gateway, Type.XiaomiGatewayLight);
+        super(gateway, DeviceType.XIAOMI_GATEWAY_LIGHT);
     }
 
     @Override
     void update(String data) {
         try {
             JsonObject o = JSON_PARSER.parse(data).getAsJsonObject();
-            int rgb = o.get("rgb").getAsInt();
+            int rgb = o.get(Property.RGB).getAsInt();
             byte previousBrightnessValue = brightness;
             brightness = (byte)(rgb >>> 24);
             Color previousColorValue = color;
-            color = new Color(rgb & 0x00FFFFFF);
+            color = new Color(rgb & COLOR_WHITE);
             if(brightness != previousBrightnessValue) {
                 notifyWithBrightnessChange(brightness);
             }
@@ -110,7 +117,7 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         // TODO verify brightness in range 0..100
         JsonObject rgb = new JsonObject();
         int rgbValue = brightness << 24 | color.getRGB();
-        rgb.addProperty("rgb", rgbValue);
+        rgb.addProperty(Property.RGB, rgbValue);
         gateway.sendDataToDevice(this, rgb);
     }
 }

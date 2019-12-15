@@ -14,12 +14,16 @@ public abstract class SlaveDevice {
         XiaomiSwitchButton
     }
 
-    protected static JsonParser JSON_PARSER = new JsonParser();
+    static class Property {
+        static final String STATUS = "status";
+    }
+
+    static JsonParser JSON_PARSER = new JsonParser();
     protected XiaomiGateway gateway;
     private String sid;
     private Type type;
 
-    public SlaveDevice(XiaomiGateway gateway, String sid, Type type) {
+    SlaveDevice(XiaomiGateway gateway, String sid, Type type) {
         this.gateway = gateway;
         this.sid = sid;
         this.type = type;
@@ -34,7 +38,7 @@ public abstract class SlaveDevice {
     }
 
     public short getShortId() {
-        throw new NotImplementedException("Method not yet implemented"); // TODO implement
+        throw new NotImplementedException("Method is not implemented yet"); // TODO implement
     }
 
     abstract void update(String data);

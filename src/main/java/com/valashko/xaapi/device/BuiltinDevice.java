@@ -5,54 +5,55 @@ import com.valashko.xaapi.XaapiException;
 
 public abstract class BuiltinDevice {
 
-    public enum Type {
-        XiaomiGatewayLight,
-        XiaomiGatewayIlluminationSensor
+    public enum DeviceType {
+        XIAOMI_GATEWAY_LIGHT("light"),
+        XIAOMI_GATEWAY_ILLUMINATION_SENSOR("illumination");
+
+        private String suffix;
+
+        DeviceType(String suffix) {
+            this.suffix = suffix;
+        }
+
+        public String getSuffix() {
+            return suffix;
+        }
     }
 
     protected static JsonParser JSON_PARSER = new JsonParser();
     protected XiaomiGateway gateway;
     private String uid;
-    private Type type;
+    private DeviceType deviceType;
 
-    public BuiltinDevice(XiaomiGateway gateway, Type type) {
+    public BuiltinDevice(XiaomiGateway gateway, DeviceType deviceType) {
         this.gateway = gateway;
-        String typeSuffix = "undefined";
-        switch (type) {
-            case XiaomiGatewayLight:
-                typeSuffix = "light";
-                break;
-            case XiaomiGatewayIlluminationSensor:
-                typeSuffix = "illumination";
-                break;
-        }
-        this.uid = gateway.getSid() + ":" + typeSuffix;
-        this.type = type;
+        this.uid = gateway.getSid() + ":" + deviceType.getSuffix();
+        this.deviceType = deviceType;
     }
 
     public String getUid() {
         return uid;
     }
 
-    public Type getType() {
-        return type;
+    public DeviceType getDeviceType() {
+        return deviceType;
     }
 
     abstract void update(String data);
 
     public XiaomiGatewayLight asXiaomiGatewayLight() throws XaapiException {
-        ensureType(Type.XiaomiGatewayLight);
+        ensureType(DeviceType.XIAOMI_GATEWAY_LIGHT);
         return (XiaomiGatewayLight) this;
     }
 
     public XiaomiGatewayIlluminationSensor asXiaomiGatewayIlluminationSensor() throws XaapiException {
-        ensureType(Type.XiaomiGatewayIlluminationSensor);
+        ensureType(DeviceType.XIAOMI_GATEWAY_ILLUMINATION_SENSOR);
         return (XiaomiGatewayIlluminationSensor) this;
     }
 
-    private void ensureType(Type type) throws XaapiException {
-        if (getType() != type) {
-            throw new XaapiException("Device type mismatch. Expected " + type);
+    private void ensureType(DeviceType deviceType) throws XaapiException {
+        if (getDeviceType() != deviceType) {
+            throw new XaapiException("Device type mismatch. Expected " + deviceType);
         }
     }
 }
