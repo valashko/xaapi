@@ -7,11 +7,11 @@ import org.apache.commons.lang3.NotImplementedException;
 public abstract class SlaveDevice {
 
     public enum Type {
-        XiaomiCube,
-        XiaomiDoorWindowSensor,
-        XiaomiSocket,
-        XiaomiMotionSensor,
-        XiaomiSwitchButton
+        XIAOMI_CUBE,
+        XIAOMI_DOOR_WINDOW_SENSOR,
+        XIAOMI_SOCKET,
+        XIAOMI_MOTION_SENSOR,
+        XIAOMI_SWITCH_BUTTON
     }
 
     static class Property {
@@ -44,27 +44,27 @@ public abstract class SlaveDevice {
     abstract void update(String data);
 
     public XiaomiCube asXiaomiCube() throws XaapiException {
-        ensureType(Type.XiaomiCube);
+        ensureType(Type.XIAOMI_CUBE);
         return (XiaomiCube) this;
     }
 
     public XiaomiDoorWindowSensor asXiaomiDoorWindowSensor() throws XaapiException {
-        ensureType(Type.XiaomiDoorWindowSensor);
+        ensureType(Type.XIAOMI_DOOR_WINDOW_SENSOR);
         return (XiaomiDoorWindowSensor) this;
     }
 
     public XiaomiSocket asXiaomiSocket() throws XaapiException {
-        ensureType(Type.XiaomiSocket);
+        ensureType(Type.XIAOMI_SOCKET);
         return (XiaomiSocket) this;
     }
 
     public XiaomiMotionSensor asXiaomiMotionSensor() throws XaapiException {
-        ensureType(Type.XiaomiMotionSensor);
+        ensureType(Type.XIAOMI_MOTION_SENSOR);
         return (XiaomiMotionSensor) this;
     }
 
     public XiaomiSwitchButton asXiaomiSwitchButton() throws XaapiException {
-        ensureType(Type.XiaomiSwitchButton);
+        ensureType(Type.XIAOMI_SWITCH_BUTTON);
         return (XiaomiSwitchButton) this;
     }
 

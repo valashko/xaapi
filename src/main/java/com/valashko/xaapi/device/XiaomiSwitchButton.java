@@ -35,7 +35,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
     private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     XiaomiSwitchButton(XiaomiGateway gateway, String sid) {
-        super(gateway, sid, Type.XiaomiSwitchButton);
+        super(gateway, sid, Type.XIAOMI_SWITCH_BUTTON);
     }
 
     @Override

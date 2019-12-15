@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevice {
 
     public enum Action {
-        MOTION("motion");// probably device is offline
+        MOTION("motion");
 
         private String value;
 
@@ -33,7 +33,7 @@ public class XiaomiMotionSensor extends SlaveDevice implements IInteractiveDevic
     private Map<SubscriptionToken, Runnable> motionCallbacks = new HashMap<>();
 
     XiaomiMotionSensor(XiaomiGateway gateway, String sid) {
-        super(gateway, sid, Type.XiaomiMotionSensor);
+        super(gateway, sid, Type.XIAOMI_MOTION_SENSOR);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class XiaomiDoorWindowSensor extends SlaveDevice implements IInteractiveD
     private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     XiaomiDoorWindowSensor(XiaomiGateway gateway, String sid) {
-        super(gateway, sid, Type.XiaomiDoorWindowSensor);
+        super(gateway, sid, Type.XIAOMI_DOOR_WINDOW_SENSOR);
     }
 
     @Override

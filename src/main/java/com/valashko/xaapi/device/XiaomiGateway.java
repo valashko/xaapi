@@ -54,7 +54,7 @@ public class XiaomiGateway {
 
         static DeviceModel of(String value) {
             return Stream.of(values())
-                    .filter(a -> value.equals(a.value))
+                    .filter(m -> value.equals(m.value))
                     .findFirst()
                     .orElse(null);
         }

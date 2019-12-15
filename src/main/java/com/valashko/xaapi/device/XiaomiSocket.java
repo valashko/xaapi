@@ -38,7 +38,7 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
     private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     XiaomiSocket(XiaomiGateway gateway, String sid) {
-        super(gateway, sid, Type.XiaomiSocket);
+        super(gateway, sid, Type.XIAOMI_SOCKET);
     }
 
     @Override
