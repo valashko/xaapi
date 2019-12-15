@@ -52,11 +52,11 @@ public class XiaomiGateway {
             this.value = value;
         }
 
-        static DeviceModel of(String value) {
+        static DeviceModel of(String value) throws XaapiException {
             return Stream.of(values())
                     .filter(m -> value.equals(m.value))
                     .findFirst()
-                    .orElse(null);
+                    .orElseThrow(() -> new XaapiException("Unsupported device model: " + value));
         }
     }
 
@@ -227,33 +227,35 @@ public class XiaomiGateway {
             String replyString = new String(directChannel.receive());
             ReadReply reply = GSON.fromJson(replyString, ReadReply.class);
             DeviceModel model = DeviceModel.of(reply.model);
-            switch (model) {
-                case CUBE:
-                    XiaomiCube cube = new XiaomiCube(this, sid);
-                    cube.update(reply.data);
-                    return cube;
-                case MAGNET:
-                    XiaomiDoorWindowSensor magnet = new XiaomiDoorWindowSensor(this, sid);
-                    magnet.update(reply.data);
-                    return magnet;
-                case PLUG:
-                    XiaomiSocket plug = new XiaomiSocket(this, sid);
-                    plug.update(reply.data);
-                    return plug;
-                case MOTION:
-                    XiaomiMotionSensor motion = new XiaomiMotionSensor(this, sid);
-                    motion.update(reply.data);
-                    return motion;
-                case SWITCH:
-                    XiaomiSwitchButton button = new XiaomiSwitchButton(this, sid);
-                    button.update(reply.data);
-                    return button;
-                default:
-                    throw new XaapiException("Unsupported device model: " + reply.model);
-            }
+
+            SlaveDevice device = getDevice(sid, model);
+            device.update(reply.data);
+
+            return device;
         } catch (IOException e) {
             throw new XaapiException("Unable to query device " + sid + ": " + e.getMessage());
         }
+    }
+
+    private SlaveDevice getDevice(String sid, DeviceModel model) {
+        SlaveDevice device = null;
+        switch (model) {
+            case CUBE:
+                device = new XiaomiCube(this, sid);
+                break;
+            case MAGNET:
+                device = new XiaomiDoorWindowSensor(this, sid);
+                break;
+            case PLUG:
+                device = new XiaomiSocket(this, sid);
+                break;
+            case MOTION:
+                device = new XiaomiMotionSensor(this, sid);
+                break;
+            case SWITCH:
+                device = new XiaomiSwitchButton(this, sid);
+        }
+        return device;
     }
 
     public void startReceivingUpdates(Executor executor) {
