@@ -30,7 +30,7 @@ public class XiaomiDoorWindowSensor extends SlaveDevice implements IInteractiveD
     }
 
     private Action lastAction;
-    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
 
     XiaomiDoorWindowSensor(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiDoorWindowSensor);

@@ -44,8 +44,8 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
     private int charge;
     private Action lastAction;
     private Optional<Double> lastRotationAngle = Optional.empty();
-    private HashMap<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
-    private HashMap<SubscriptionToken, Consumer<Double>> rotationCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Consumer<String>> actionsCallbacks = new HashMap<>();
+    private Map<SubscriptionToken, Consumer<Double>> rotationCallbacks = new HashMap<>();
 
     public XiaomiCube(XiaomiGateway gateway, String sid) {
         super(gateway, sid, Type.XiaomiCube);
