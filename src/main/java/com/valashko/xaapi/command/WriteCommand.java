@@ -5,19 +5,19 @@ import com.valashko.xaapi.device.SlaveDevice;
 
 import java.nio.charset.StandardCharsets;
 
-public class WriteCommand implements ICommand {
+public class WriteCommand extends AbstractCommand {
     private SlaveDevice device;
     private JsonObject data;
 
     public WriteCommand(SlaveDevice device, JsonObject data, String key) {
         this.device = device;
         this.data = data;
-        data.addProperty("key", key);
+        data.addProperty(Property.KEY, key);
     }
 
     @Override
     public byte[] toBytes() {
-        String what = "{{\"cmd\":\"write\", \"sid\":\""+ device.getSid() +"\", \"data\":" + data + "}}";
+        String what = "{{\"cmd\":\"write\", \"sid\":\"" + device.getSid() + "\", \"data\":" + data + "}}";
         return what.getBytes(StandardCharsets.US_ASCII);
     }
 }

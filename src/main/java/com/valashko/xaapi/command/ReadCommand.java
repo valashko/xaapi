@@ -2,7 +2,7 @@ package com.valashko.xaapi.command;
 
 import java.nio.charset.StandardCharsets;
 
-public class ReadCommand implements ICommand {
+public class ReadCommand extends AbstractCommand {
     private String sid;
 
     public ReadCommand(String sid) {
@@ -11,6 +11,6 @@ public class ReadCommand implements ICommand {
 
     @Override
     public byte[] toBytes() {
-        return new String("{\"cmd\":\"read\", \"sid\":\""+ sid +"\"}").getBytes(StandardCharsets.US_ASCII);
+        return ("{\"cmd\":\"read\", \"sid\":\"" + sid + "\"}").getBytes(StandardCharsets.US_ASCII);
     }
 }
