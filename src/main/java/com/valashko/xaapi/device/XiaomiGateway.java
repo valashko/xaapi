@@ -52,11 +52,15 @@ public class XiaomiGateway {
             this.value = value;
         }
 
-        static DeviceModel of(String value) throws XaapiException {
+        public String getValue() {
+            return value;
+        }
+
+        static DeviceModel of(String value) {
             return Stream.of(values())
                     .filter(m -> value.equals(m.value))
                     .findFirst()
-                    .orElseThrow(() -> new XaapiException("Unsupported device model: " + value));
+                    .orElse(null);
         }
     }
 
@@ -228,7 +232,7 @@ public class XiaomiGateway {
             ReadReply reply = GSON.fromJson(replyString, ReadReply.class);
             DeviceModel model = DeviceModel.of(reply.model);
 
-            SlaveDevice device = getDevice(sid, model);
+            SlaveDevice device = makeDevice(sid, model);
             device.update(reply.data);
 
             return device;
@@ -237,25 +241,21 @@ public class XiaomiGateway {
         }
     }
 
-    private SlaveDevice getDevice(String sid, DeviceModel model) {
-        SlaveDevice device = null;
+    private SlaveDevice makeDevice(String sid, DeviceModel model) throws XaapiException {
         switch (model) {
             case CUBE:
-                device = new XiaomiCube(this, sid);
-                break;
+                return new XiaomiCube(this, sid);
             case MAGNET:
-                device = new XiaomiDoorWindowSensor(this, sid);
-                break;
+                return new XiaomiDoorWindowSensor(this, sid);
             case PLUG:
-                device = new XiaomiSocket(this, sid);
-                break;
+                return new XiaomiSocket(this, sid);
             case MOTION:
-                device = new XiaomiMotionSensor(this, sid);
-                break;
+                return new XiaomiMotionSensor(this, sid);
             case SWITCH:
-                device = new XiaomiSwitchButton(this, sid);
+                return new XiaomiSwitchButton(this, sid);
+            default:
+                throw new XaapiException("Unsupported device model: " + model.getValue());
         }
-        return device;
     }
 
     public void startReceivingUpdates(Executor executor) {
