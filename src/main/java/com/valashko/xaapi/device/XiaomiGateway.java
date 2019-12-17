@@ -31,10 +31,12 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class XiaomiGateway {
@@ -167,6 +169,12 @@ public class XiaomiGateway {
         SlaveDevice device = knownDevices.get(sid);
         assert (device.getSid().equals(sid));
         return device;
+    }
+
+    public List<SlaveDevice> getDevicesByType(SlaveDevice.Type deviceType) {
+        return knownDevices.values().stream()
+                .filter(slaveDevice -> slaveDevice.getType() == deviceType)
+                .collect(Collectors.toList());
     }
 
     public String getSid() {
