@@ -2,7 +2,7 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.valashko.xaapi.XaapiException;
+import com.valashko.xaapi.ApiException;
 import com.valashko.xaapi.channel.DirectChannel;
 import com.valashko.xaapi.channel.IncomingMulticastChannel;
 import com.valashko.xaapi.command.GetIdListCommand;
@@ -101,31 +101,31 @@ public class XiaomiGateway {
     private Map<String, SlaveDevice> knownDevices = new HashMap<>();
     private boolean continueReceivingUpdates;
 
-    public static XiaomiGateway discover() throws IOException, XaapiException {
+    public static XiaomiGateway discover() throws IOException {
         // TODO discover more than one gateway
         DirectChannel discoveryChannel = new DirectChannel(GROUP, PORT_DISCOVERY);
         discoveryChannel.send(new WhoisCommand().toBytes());
         String replyString = new String(discoveryChannel.receive());
         WhoisReply reply = GSON.fromJson(replyString, WhoisReply.class);
         if (Integer.parseInt(reply.port) != PORT) {
-            throw new XaapiException("Gateway occupies unexpected port: " + reply.port);
+            throw new ApiException("Gateway occupies unexpected port: " + reply.port);
         }
         return new XiaomiGateway(reply.ip);
     }
 
-    public XiaomiGateway(String ip) throws IOException, XaapiException {
+    public XiaomiGateway(String ip) throws IOException {
         this.incomingMulticastChannel = new IncomingMulticastChannel(GROUP, PORT);
         this.directChannel = new DirectChannel(ip, PORT);
         queryDevices();
         configureBuiltinDevices();
     }
 
-    public XiaomiGateway(String ip, String password) throws IOException, XaapiException {
+    public XiaomiGateway(String ip, String password) throws IOException {
         this(ip);
         configureCipher(password);
     }
 
-    public void configurePassword(String password) throws XaapiException {
+    public void configurePassword(String password) {
         configureCipher(password);
     }
 
@@ -138,18 +138,18 @@ public class XiaomiGateway {
         builtinIlluminationSensor = new XiaomiGatewayIlluminationSensor(this);
     }
 
-    private void configureCipher(String password) throws XaapiException {
+    private void configureCipher(String password) {
         try {
             cipher = Cipher.getInstance("AES/CBC/NoPadding");
             final SecretKeySpec keySpec = new SecretKeySpec(password.getBytes(), "AES");
             final IvParameterSpec ivSpec = new IvParameterSpec(IV);
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
-            throw new XaapiException("Cipher error: " + e.getMessage());
+            throw new ApiException("Cipher error: " + e.getMessage());
         }
     }
 
-    private void queryDevices() throws XaapiException {
+    private void queryDevices() {
         try {
             directChannel.send(new GetIdListCommand().toBytes());
             String replyString = new String(directChannel.receive());
@@ -159,7 +159,7 @@ public class XiaomiGateway {
                 knownDevices.put(sid, readDevice(sid));
             }
         } catch (IOException e) {
-            throw new XaapiException("Unable to query devices: " + e.getMessage());
+            throw new ApiException("Unable to query devices: " + e.getMessage());
         }
     }
 
@@ -185,47 +185,47 @@ public class XiaomiGateway {
         return sid.equals(this.sid);
     }
 
-    private void updateKey(String token) throws XaapiException {
+    private void updateKey(String token) {
         if (cipher != null) {
             try {
                 String keyAsHexString = Utility.toHexString(cipher.doFinal(token.getBytes(StandardCharsets.US_ASCII)));
                 key = Optional.of(keyAsHexString);
             } catch (IllegalBlockSizeException | BadPaddingException e) {
-                throw new XaapiException("Cipher error: " + e.getMessage());
+                throw new ApiException("Cipher error: " + e.getMessage());
             }
         } else {
-            throw new XaapiException("Unable to update key without a cipher. Did you forget to set a password?");
+            throw new ApiException("Unable to update key without a cipher. Did you forget to set a password?");
         }
     }
 
-    void sendDataToDevice(SlaveDevice device, JsonObject data) throws XaapiException {
+    void sendDataToDevice(SlaveDevice device, JsonObject data) {
         if (key.isPresent()) {
             try {
                 directChannel.send(new WriteCommand(device, data, key.get()).toBytes());
                 // TODO add handling for expired key
             } catch (IOException e) {
-                throw new XaapiException("Network error: " + e.getMessage());
+                throw new ApiException("Network error: " + e.getMessage());
             }
         } else {
-            throw new XaapiException("Unable to control device without a key. Did you forget to set a password?");
+            throw new ApiException("Unable to control device without a key. Did you forget to set a password?");
         }
     }
 
-    void sendDataToDevice(BuiltinDevice device /* just a type marker for overloading */, JsonObject data) throws XaapiException {
+    void sendDataToDevice(BuiltinDevice device /* just a type marker for overloading */, JsonObject data) {
         assert device.gateway.equals(this);
         if (key.isPresent()) {
             try {
                 directChannel.send(new WriteSelfCommand(this, data, key.get()).toBytes());
                 // TODO add handling for expired key
             } catch (IOException e) {
-                throw new XaapiException("Network error: " + e.getMessage());
+                throw new ApiException("Network error: " + e.getMessage());
             }
         } else {
-            throw new XaapiException("Unable to control device without a key. Did you forget to set a password?");
+            throw new ApiException("Unable to control device without a key. Did you forget to set a password?");
         }
     }
 
-    private SlaveDevice readDevice(String sid) throws XaapiException {
+    private SlaveDevice readDevice(String sid) {
         try {
             directChannel.send(new ReadCommand(sid).toBytes());
             String replyString = new String(directChannel.receive());
@@ -237,11 +237,11 @@ public class XiaomiGateway {
 
             return device;
         } catch (IOException e) {
-            throw new XaapiException("Unable to query device " + sid + ": " + e.getMessage());
+            throw new ApiException("Unable to query device " + sid + ": " + e.getMessage());
         }
     }
 
-    private SlaveDevice makeDevice(String sid, DeviceModel model) throws XaapiException {
+    private SlaveDevice makeDevice(String sid, DeviceModel model) {
         switch (model) {
             case CUBE:
                 return new XiaomiCube(this, sid);
@@ -254,7 +254,7 @@ public class XiaomiGateway {
             case SWITCH:
                 return new XiaomiSwitchButton(this, sid);
             default:
-                throw new XaapiException("Unsupported device model: " + model.getValue());
+                throw new ApiException("Unsupported device model: " + model.getValue());
         }
     }
 
@@ -267,7 +267,7 @@ public class XiaomiGateway {
                     handleUpdate(GSON.fromJson(received, ReadReply.class), received);
                 } catch (SocketTimeoutException e) {
                     // ignore
-                } catch (IOException | XaapiException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                     continueReceivingUpdates = false;
                 }
@@ -279,7 +279,7 @@ public class XiaomiGateway {
         continueReceivingUpdates = false;
     }
 
-    private void handleUpdate(Reply update, String received) throws XaapiException {
+    private void handleUpdate(Reply update, String received) {
         switch (Command.of(update.cmd)) {
             case REPORT:
                 Report report = GSON.fromJson(received, Report.class);
@@ -299,7 +299,7 @@ public class XiaomiGateway {
                 }
                 break;
             default:
-                throw new XaapiException("Unexpected update command: " + update.cmd);
+                throw new ApiException("Unexpected update command: " + update.cmd);
         }
     }
 
@@ -312,7 +312,7 @@ public class XiaomiGateway {
         builtinIlluminationSensor.update(report.data);
     }
 
-    private void handleGatewayHeartbeat(GatewayHeartbeat gatewayHeartbeat) throws XaapiException {
+    private void handleGatewayHeartbeat(GatewayHeartbeat gatewayHeartbeat) {
         if (cipher != null) {
             updateKey(gatewayHeartbeat.token);
         }

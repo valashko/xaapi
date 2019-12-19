@@ -2,7 +2,7 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.valashko.xaapi.XaapiException;
+import com.valashko.xaapi.ApiException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +26,11 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
             return value;
         }
 
-        static Action of(String value) throws XaapiException {
+        static Action of(String value) {
             return Stream.of(values())
                     .filter(a -> value.equals(a.value))
                     .findFirst()
-                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+                    .orElseThrow(() -> new ApiException("Unknown action: " + value));
         }
     }
 
@@ -50,7 +50,7 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
                 lastAction = Action.of(action);
                 notifyWithAction(action);
             }
-        } catch (XaapiException | JsonSyntaxException e) {
+        } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }
     }
@@ -64,13 +64,13 @@ public class XiaomiSocket extends SlaveDevice implements IInteractiveDevice {
         return lastAction;
     }
 
-    public void turnOn() throws XaapiException {
+    public void turnOn() {
         JsonObject on = new JsonObject();
         on.addProperty(Property.STATUS, Action.ON.getValue());
         gateway.sendDataToDevice(this, on);
     }
 
-    public void turnOff() throws XaapiException {
+    public void turnOff() {
         JsonObject off = new JsonObject();
         off.addProperty(Property.STATUS, Action.OFF.getValue());
         gateway.sendDataToDevice(this, off);

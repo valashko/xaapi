@@ -1,7 +1,7 @@
 package com.valashko.xaapi.device;
 
 import com.google.gson.JsonParser;
-import com.valashko.xaapi.XaapiException;
+import com.valashko.xaapi.ApiException;
 import org.apache.commons.lang3.NotImplementedException;
 
 public abstract class SlaveDevice {
@@ -43,34 +43,34 @@ public abstract class SlaveDevice {
 
     abstract void update(String data);
 
-    public XiaomiCube asXiaomiCube() throws XaapiException {
+    public XiaomiCube asXiaomiCube() {
         ensureType(Type.XIAOMI_CUBE);
         return (XiaomiCube) this;
     }
 
-    public XiaomiDoorWindowSensor asXiaomiDoorWindowSensor() throws XaapiException {
+    public XiaomiDoorWindowSensor asXiaomiDoorWindowSensor() {
         ensureType(Type.XIAOMI_DOOR_WINDOW_SENSOR);
         return (XiaomiDoorWindowSensor) this;
     }
 
-    public XiaomiSocket asXiaomiSocket() throws XaapiException {
+    public XiaomiSocket asXiaomiSocket() {
         ensureType(Type.XIAOMI_SOCKET);
         return (XiaomiSocket) this;
     }
 
-    public XiaomiMotionSensor asXiaomiMotionSensor() throws XaapiException {
+    public XiaomiMotionSensor asXiaomiMotionSensor() {
         ensureType(Type.XIAOMI_MOTION_SENSOR);
         return (XiaomiMotionSensor) this;
     }
 
-    public XiaomiSwitchButton asXiaomiSwitchButton() throws XaapiException {
+    public XiaomiSwitchButton asXiaomiSwitchButton() {
         ensureType(Type.XIAOMI_SWITCH_BUTTON);
         return (XiaomiSwitchButton) this;
     }
 
-    private void ensureType(Type type) throws XaapiException {
+    private void ensureType(Type type) {
         if (getType() != type) {
-            throw new XaapiException("Device type mismatch. Expected " + type);
+            throw new ApiException("Device type mismatch. Expected " + type);
         }
     }
 }

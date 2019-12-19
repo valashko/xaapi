@@ -2,7 +2,6 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.valashko.xaapi.XaapiException;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -92,7 +91,7 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         }
     }
 
-    public void setOn(boolean on) throws XaapiException {
+    public void setOn(boolean on) {
         if(on) {
             setBrightness(previousNonZeroBrightness);
         } else {
@@ -100,7 +99,7 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         }
     }
 
-    private void setBrightness(byte brightness) throws XaapiException {
+    private void setBrightness(byte brightness) {
         writeBrightnessAndColor(brightness, this.color);
         if(this.brightness != 0) {
             previousNonZeroBrightness = this.brightness;
@@ -108,12 +107,12 @@ public class XiaomiGatewayLight extends BuiltinDevice {
         this.brightness = brightness;
     }
 
-    public void setColor(Color color) throws XaapiException {
+    public void setColor(Color color) {
         writeBrightnessAndColor(this.brightness, color);
         this.color = color;
     }
 
-    private void writeBrightnessAndColor(byte brightness, Color color) throws XaapiException {
+    private void writeBrightnessAndColor(byte brightness, Color color) {
         // TODO verify brightness in range 0..100
         JsonObject rgb = new JsonObject();
         int rgbValue = brightness << 24 | color.getRGB();

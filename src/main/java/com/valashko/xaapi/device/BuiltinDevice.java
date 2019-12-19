@@ -1,7 +1,7 @@
 package com.valashko.xaapi.device;
 
 import com.google.gson.JsonParser;
-import com.valashko.xaapi.XaapiException;
+import com.valashko.xaapi.ApiException;
 
 public abstract class BuiltinDevice {
 
@@ -41,19 +41,19 @@ public abstract class BuiltinDevice {
 
     abstract void update(String data);
 
-    public XiaomiGatewayLight asXiaomiGatewayLight() throws XaapiException {
+    public XiaomiGatewayLight asXiaomiGatewayLight() {
         ensureType(DeviceType.XIAOMI_GATEWAY_LIGHT);
         return (XiaomiGatewayLight) this;
     }
 
-    public XiaomiGatewayIlluminationSensor asXiaomiGatewayIlluminationSensor() throws XaapiException {
+    public XiaomiGatewayIlluminationSensor asXiaomiGatewayIlluminationSensor() {
         ensureType(DeviceType.XIAOMI_GATEWAY_ILLUMINATION_SENSOR);
         return (XiaomiGatewayIlluminationSensor) this;
     }
 
-    private void ensureType(DeviceType deviceType) throws XaapiException {
+    private void ensureType(DeviceType deviceType) {
         if (getDeviceType() != deviceType) {
-            throw new XaapiException("Device type mismatch. Expected " + deviceType);
+            throw new ApiException("Device type mismatch. Expected " + deviceType);
         }
     }
 }

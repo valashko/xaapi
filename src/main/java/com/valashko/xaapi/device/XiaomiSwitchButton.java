@@ -2,7 +2,7 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.valashko.xaapi.XaapiException;
+import com.valashko.xaapi.ApiException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,11 +23,11 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
             this.value = value;
         }
 
-        static Action of(String value) throws XaapiException {
+        static Action of(String value) {
             return Stream.of(values())
                     .filter(a -> value.equals(a.value))
                     .findFirst()
-                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+                    .orElseThrow(() -> new ApiException("Unknown action: " + value));
         }
     }
 
@@ -45,7 +45,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
             if (o.has(Property.STATUS)) {
                 updateWithAction(o.get(Property.STATUS).getAsString());
             }
-        } catch (XaapiException | JsonSyntaxException e) {
+        } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }
     }
@@ -59,7 +59,7 @@ public class XiaomiSwitchButton extends SlaveDevice implements IInteractiveDevic
         return lastAction;
     }
 
-    private void updateWithAction(String action) throws XaapiException {
+    private void updateWithAction(String action) {
         lastAction = Action.of(action);
         notifyWithAction(action);
     }

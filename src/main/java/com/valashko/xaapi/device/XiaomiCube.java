@@ -2,7 +2,7 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.valashko.xaapi.XaapiException;
+import com.valashko.xaapi.ApiException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,11 +33,11 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
             return value;
         }
 
-        static Action of(String value) throws XaapiException {
+        static Action of(String value) {
             return Stream.of(values())
                     .filter(a -> value.equals(a.value))
                     .findFirst()
-                    .orElseThrow(() -> new XaapiException("Unknown action: " + value));
+                    .orElseThrow(() -> new ApiException("Unknown action: " + value));
         }
     }
 
@@ -63,7 +63,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
                 String angle = o.get(Action.ROTATE.getValue()).getAsString().replace(',', '.'); // for some reason they use comma as decimal point
                 updateWithRotation(Double.parseDouble(angle));
             }
-        } catch (XaapiException | JsonSyntaxException e) {
+        } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }
     }
@@ -82,11 +82,11 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
         return lastAction;
     }
 
-    public double getLastRotationAngle() throws XaapiException {
+    public double getLastRotationAngle() {
         if (lastRotationAngle.isPresent()) {
             return lastRotationAngle.get();
         } else {
-            throw new XaapiException("Last rotation value does not exist");
+            throw new ApiException("Last rotation value does not exist");
         }
     }
 
@@ -100,7 +100,7 @@ public class XiaomiCube extends SlaveDevice implements IInteractiveDevice {
         rotationCallbacks.remove(token);
     }
 
-    private void updateWithAction(String action) throws XaapiException {
+    private void updateWithAction(String action) {
         lastAction = Action.of(action);
         notifyWithAction(action);
     }
