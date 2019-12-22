@@ -1,6 +1,5 @@
 package com.valashko.xaapi.samples;
 
-import com.valashko.xaapi.device.IInteractiveDevice.SubscriptionToken;
 import com.valashko.xaapi.device.SlaveDevice;
 import com.valashko.xaapi.device.XiaomiDoorWindowSensor;
 import com.valashko.xaapi.device.XiaomiGateway;
@@ -10,33 +9,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.valashko.xaapi.device.SlaveDevice.Type.XIAOMI_DOOR_WINDOW_SENSOR;
+
 public class Example2 {
 
     private static final int TERMINATION_TIMEOUT = 60; // in seconds
 
     public static void main(String[] args) throws Exception {
         XiaomiGateway gateway = new XiaomiGateway("192.168.1.123");
-
-        Optional<SlaveDevice> doorSensor = gateway.getDevicesByType(SlaveDevice.Type.XIAOMI_DOOR_WINDOW_SENSOR).stream().findFirst();
-        if (doorSensor.isPresent()) {
-            System.out.println("Door sensor sid: " + doorSensor.get().getSid());
-
-            SubscriptionToken subscriptionToken = subscribe(doorSensor.get().asXiaomiDoorWindowSensor());
-            listen(gateway);
-
-            unsubscribe(doorSensor.get().asXiaomiDoorWindowSensor(), subscriptionToken);
-        } else {
-            System.out.println("Device not found");
-        }
+        Optional<SlaveDevice> doorSensor = gateway.getDevicesByType(XIAOMI_DOOR_WINDOW_SENSOR).stream().findFirst();
+        doorSensor.ifPresent(s -> {
+            try {
+                System.out.println("Door sensor sid: " + s.getSid());
+                subscribe(s.asXiaomiDoorWindowSensor());
+                listen(gateway);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    private static SubscriptionToken subscribe(XiaomiDoorWindowSensor doorSensor) {
-        return doorSensor.subscribeForActions(action ->
+    private static void subscribe(XiaomiDoorWindowSensor doorSensor) {
+        doorSensor.subscribeForActions(action ->
                 System.out.println("Door sensor: " + action));
-    }
-
-    private static void unsubscribe(XiaomiDoorWindowSensor doorSensor, SubscriptionToken subscriptionToken) {
-        doorSensor.unsubscribeForActions(subscriptionToken);
     }
 
     private static void listen(XiaomiGateway gateway) throws InterruptedException {
