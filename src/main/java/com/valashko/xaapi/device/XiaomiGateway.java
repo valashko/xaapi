@@ -32,10 +32,12 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -94,6 +96,7 @@ public class XiaomiGateway {
     private static final Gson GSON = new Gson();
 
     private String sid;
+    private String token;
     private Optional<String> key = Optional.empty();
     private Cipher cipher;
     private IncomingMulticastChannel incomingMulticastChannel;
@@ -125,6 +128,7 @@ public class XiaomiGateway {
     public XiaomiGateway(String ip, String password) throws IOException {
         this(ip);
         configureCipher(password);
+        updateKey(token);
     }
 
     public void configurePassword(String password) {
@@ -157,6 +161,7 @@ public class XiaomiGateway {
             String replyString = new String(directChannel.receive());
             GetIdListReply reply = GSON.fromJson(replyString, GetIdListReply.class);
             sid = reply.sid;
+            token = reply.token;
             for (String sid : GSON.fromJson(reply.data, String[].class)) {
                 knownDevices.put(sid, readDevice(sid));
             }
@@ -169,6 +174,12 @@ public class XiaomiGateway {
         SlaveDevice device = knownDevices.get(sid);
         assert (device.getSid().equals(sid));
         return device;
+    }
+
+    public List<SlaveDevice> getDevicesByType(SlaveDevice.Type deviceType) {
+        return knownDevices.values().stream()
+                .filter(slaveDevice -> slaveDevice.getType() == deviceType)
+                .collect(Collectors.toList());
     }
 
     public String getSid() {
@@ -282,7 +293,8 @@ public class XiaomiGateway {
     }
 
     private void handleUpdate(Reply update, String received) {
-        switch (Command.of(update.cmd)) {
+        Command command = Command.of(update.cmd);
+        switch (command) {
             case REPORT:
                 Report report = GSON.fromJson(received, Report.class);
                 if (isMyself(update.sid)) {

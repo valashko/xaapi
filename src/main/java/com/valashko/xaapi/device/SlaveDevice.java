@@ -73,4 +73,9 @@ public abstract class SlaveDevice {
             throw new ApiException("Device type mismatch. Expected " + type);
         }
     }
+
+    @Override
+    public String toString() {
+        return type.name();
+    }
 }
