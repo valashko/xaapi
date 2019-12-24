@@ -2,12 +2,14 @@ package com.valashko.xaapi.device;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import lombok.extern.log4j.Log4j2;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+@Log4j2
 public class XiaomiGatewayLight extends BuiltinDevice {
 
     private static final int COLOR_WHITE = 0x00FFFFFF;
@@ -43,7 +45,7 @@ public class XiaomiGatewayLight extends BuiltinDevice {
                 notifyWithColorChange(color);
             }
         } catch (JsonSyntaxException e) {
-            e.printStackTrace();
+            log.error("Update error", e);
         }
     }
 
