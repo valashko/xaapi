@@ -16,7 +16,7 @@ public class Example2 {
     private static final int TERMINATION_TIMEOUT = 60; // Listening time in seconds
 
     public static void main(String[] args) throws Exception {
-        XiaomiGateway gateway = new XiaomiGateway("192.168.1.123");
+        XiaomiGateway gateway = XiaomiGateway.discover();
         Optional<SlaveDevice> doorSensor = gateway.getDevicesByType(XIAOMI_DOOR_WINDOW_SENSOR).stream().findFirst();
         doorSensor.ifPresent(s -> {
             try {

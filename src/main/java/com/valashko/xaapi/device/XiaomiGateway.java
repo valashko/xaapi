@@ -125,12 +125,12 @@ public class XiaomiGateway {
 
     public XiaomiGateway(String ip, String password) throws IOException, XaapiException {
         this(ip);
-        configureCipher(password);
-        updateKey(token);
+        configurePassword(password);
     }
 
     public void configurePassword(String password) throws XaapiException {
         configureCipher(password);
+        updateKey(token);
     }
 
     public Map<String, SlaveDevice> getKnownDevices() {
